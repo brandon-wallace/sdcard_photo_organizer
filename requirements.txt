@@ -1,1 +1,1 @@
-Python 3.5.3
+Pillow==8.0.1
