@@ -8,11 +8,13 @@ Requirements:
 """
 
 
+import sys
 import datetime
-from PIL import Image
 from pathlib import Path
-import shutil
+# import shutil
 import os
+from PIL import Image
+from PIL.ExifTags import TAGS
 
 
 # Create the directory according to the date formatted YYYY-MM-DD.
@@ -23,68 +25,71 @@ count = 0
 menu = []
 
 # Scan for media mounted on the computer. Display a menu of storage devices.
-for item, path in enumerate(Path(f'/media/{current_user}').iterdir(), start=1):
-    menu.append(path)
-    print(f'{item}. {str(path)}')
-# for card in os.listdir('/media/' + current_user):
-#     menu.append(card)
-#     count += 1
-#     print("{}. {}".format(count, card))
+storage = Path(f'/media/{current_user}').iterdir()
+if not storage:
+    print('No storage media mounted.')
+    sys.exit(1)
+else:
+    for item, path in enumerate(storage, start=1):
+        menu.append(path)
+        print(f'{item}. {str(path)}')
 
 # Select the device containing the media.
-selection = int(input("Select a number of the SD card: "))
-sdcard = str(menu[selection-1])
-print(sdcard)
-print(type(sdcard))
-print(f'SOURCE: {sdcard}')
-destination = Path(f'/media/{current_user}/Pictures/photos_{main_directory}')
-print(f'DESTINATION: {destination}')
+try:
+    selection = int(input("Select a number of the SD card: "))
+    sdcard = str(menu[selection-1])
+except (ValueError, IndexError) as e:
+    print(e)
+    sys.exit(1)
+
+source = sdcard
+destination = Path(f'/home/{current_user}/Pictures/photos_{main_directory}')
 
 
 def create_directory(directory):
     '''Make directory to store picture files'''
 
-    target_dir = Path(directory)
-    if not target_dir.is_dir():
-        print(f'Creating {target_dir}!')
-        target_dir.mkdir(mode=0o777, parents=False, exist_ok=False)
+    # target_dir = Path(directory)
+    if not directory.is_dir():
+        print(f'Creating {directory}!')
+        directory.mkdir(mode=0o777, parents=False, exist_ok=False)
     else:
-        print(f'Directory {target_dir} exists.')
+        print(f'Directory {directory} exists.')
         return
 
 
-create_directory('test_directory')
-# def make_directory(directory):
-#     '''Create the directory if not in existance.'''
-#     if not os.path.exists(directory):
-#         os.mkdir(directory)
-# 
-# 
-# source = '/media/' + current_user + '/' + sdcard
-# destination = '/home/' + current_user + '/Pictures/' + 'photos_' + main_directory
-# 
-# make_directory(destination)
-# 
-# 
-# def get_img_date(path):
-#     '''Retrieve the date of the photo from the metadata.'''
-#     # Date format YYYY-MM-DD. 
-#     img_date = Image.open(path)._getexif()[36867].split()[0]
-#     img_date = img_date.replace(':', '-')
-#     return img_date
-# 
-# 
-# def get_video_date(path):
-#     '''Retrieve the date of the video from the metadata.'''
-#     video_date = os.system("ls -l --time-style='+%Y-%m-%d' *.MOV")
-#     
-# 
-# # Recursively scan for the photos and videos contained on the storage media.
-# for root, directories, photos in os.walk(source):
-#     for p in photos:
-#         # Copy photos to destination directory.
-#         if p.endswith(".JPG") or p.endswith(".jpg"):
-#             files = os.path.join(root, p)
-#             make_directory(destination + '/' + get_img_date(files))
-#             shutil.move(files, destination + '/' + get_img_date(files))
-# 
+create_directory(destination)
+
+
+def get_img_date(path_to_image):
+    '''Retrieve the date of the photo from the metadata.'''
+
+    exif = {}
+    image_file = Image.open(path_to_image)
+    for tag, value in image_file.getexif().items():
+        if tag in TAGS:
+            exif[TAGS[tag]] = value
+    return exif
+    # exifdata = image_file.getexif()
+    # for tag_id in exifdata:
+    #     tag = TAGS.get(tag_id, tag_id)
+    #     data = exifdata.get(tag_id)
+    #     if isinstance(data, bytes):
+    #         data = data.decode()
+    #     print(f'{tag:25} => {data}')
+    # img_date = Image.open(path)._getexif()[36867].split()[0]
+    # img_date = img_date.replace(':', '-')
+    # return img_date
+
+
+def file_search(path):
+
+    print('SEARCHING...')
+    source_dir = Path(path)
+    for ele in source_dir.rglob('*.JPG'):
+        print(ele)
+        img = get_img_date(ele)
+        print(img['DateTime'])
+
+
+file_search(source)
