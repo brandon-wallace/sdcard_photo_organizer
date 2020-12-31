@@ -8,11 +8,11 @@ Requirements:
 """
 
 
+import os
 import sys
+import shutil
 import datetime
 from pathlib import Path
-# import shutil
-import os
 from PIL import Image
 from PIL.ExifTags import TAGS
 
@@ -32,7 +32,6 @@ if not storage:
 else:
     for item, path in enumerate(storage, start=1):
         menu.append(path)
-        print(f'{item}. {str(path)}')
 
 # Select the device containing the media.
 try:
@@ -49,12 +48,10 @@ destination = Path(f'/home/{current_user}/Pictures/photos_{main_directory}')
 def create_directory(directory):
     '''Make directory to store picture files'''
 
-    # target_dir = Path(directory)
     if not directory.is_dir():
         print(f'Creating {directory}!')
         directory.mkdir(mode=0o777, parents=False, exist_ok=False)
     else:
-        print(f'Directory {directory} exists.')
         return
 
 
@@ -62,7 +59,7 @@ create_directory(destination)
 
 
 def get_img_date(path_to_image):
-    '''Retrieve the date of the photo from the metadata.'''
+    '''Retrieve the date of the photo from the metadata'''
 
     exif = {}
     image_file = Image.open(path_to_image)
@@ -70,26 +67,21 @@ def get_img_date(path_to_image):
         if tag in TAGS:
             exif[TAGS[tag]] = value
     return exif
-    # exifdata = image_file.getexif()
-    # for tag_id in exifdata:
-    #     tag = TAGS.get(tag_id, tag_id)
-    #     data = exifdata.get(tag_id)
-    #     if isinstance(data, bytes):
-    #         data = data.decode()
-    #     print(f'{tag:25} => {data}')
-    # img_date = Image.open(path)._getexif()[36867].split()[0]
-    # img_date = img_date.replace(':', '-')
-    # return img_date
 
 
 def file_search(path):
+    '''Recursively search for image files'''
 
-    print('SEARCHING...')
+    print('Searching for images. Please wait...')
     source_dir = Path(path)
     for ele in source_dir.rglob('*.JPG'):
-        print(ele)
+
         img = get_img_date(ele)
-        print(img['DateTime'])
+        creation_date = str(img['DateTime']).replace(':', '-').split(' ')[0]
+        new_directory = destination / creation_date
+        if not new_directory.exists():
+            new_directory.mkdir()
+        shutil.move(str(ele), new_directory)
 
 
 file_search(source)
