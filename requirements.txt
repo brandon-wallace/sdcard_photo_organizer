@@ -1,1 +1,2 @@
-Pillow==8.0.1
+-i https://pypi.org/simple/
+pillow==8.1.1
