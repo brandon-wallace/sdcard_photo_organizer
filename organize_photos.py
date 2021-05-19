@@ -11,14 +11,14 @@ Requirements:
 import os
 import sys
 import shutil
-import datetime
+from datetime import datetime
 from pathlib import Path
 from PIL import Image
 from PIL.ExifTags import TAGS
 
 
 # Create the directory according to the date formatted YYYY-MM-DD.
-main_directory = datetime.datetime.today().strftime("%Y-%m-%d")
+main_directory = datetime.today().strftime("%Y-%m-%d")
 # Get the name of the user logged in.
 current_user = os.getlogin()
 count = 0
