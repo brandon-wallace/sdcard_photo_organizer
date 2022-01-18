@@ -6,3 +6,4 @@ venv/
 pip-selfcheck.json
 *.ipynb
 *.pyc
+Pipfile.lock
