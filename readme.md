@@ -7,5 +7,4 @@ Requirements
     
 
     Software
-    - Python 3.6+
-    - Pillow
+    - Python 3.5.3
